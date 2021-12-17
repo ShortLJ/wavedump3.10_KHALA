@@ -88,6 +88,7 @@
 typedef enum {
 	OFF_BINARY=	0x00000001,			// Bit 0: 1 = BINARY, 0 =ASCII
 	OFF_HEADER= 0x00000002,			// Bit 1: 1 = include header, 0 = just samples data
+	OFF_ROOT= 0x00000004,			// Bit 1: 1 = enable ROOT, 0 = without ROOT
 } OUTFILE_FLAGS;
 
 typedef struct{
@@ -165,6 +166,7 @@ typedef struct WaveDumpRun_t {
     uint32_t *Histogram[MAX_CH];
     FILE *fout[MAX_CH];
 	FILE *foutaio;
+	TFile *foutROOT;
 } WaveDumpRun_t;
 
 /* Function prototypes */
