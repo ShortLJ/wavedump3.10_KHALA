@@ -25,6 +25,9 @@
 #include <CAENDigitizer.h>
 #include <CAENDigitizerType.h>
 
+#include <TROOT.h>
+#include "V1742_Hit.h"
+
 #ifdef WIN32
 
     #include <time.h>
@@ -166,7 +169,14 @@ typedef struct WaveDumpRun_t {
     uint32_t *Histogram[MAX_CH];
     FILE *fout[MAX_CH];
 	FILE *foutaio;
+
+
+
 	TFile *foutROOT;
+	TTree *TTreeROOT;
+	vector<V1742_Hit> V1742_Hits;
+	vector<V1742_Hit> V1742_FastTrig;
+
 } WaveDumpRun_t;
 
 /* Function prototypes */

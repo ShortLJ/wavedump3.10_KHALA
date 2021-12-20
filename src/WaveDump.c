@@ -1590,7 +1590,75 @@ int WriteOutputFilesx742(WaveDumpConfig_t *WDcfg, WaveDumpRun_t *WDrun, CAEN_DGT
     char trname[10], flag = 0; 
 	int datamax, datamin, isample;
 
-if(WDcfg->AllInOneFlag){
+	if( WDcfg->OutFileFlags & OFF_ROOT && ) {
+		if(!WDrun->foutROOT){
+			char fname[100];
+			if (!(WDcfg->UserSetNameFlag))          // Added by LJ
+				sprintf(fname, "%swave.root", path);          // Added by LJ
+			else if (WDcfg->UserSetNameFlag)          // Added by LJ
+				sprintf(fname, "%s%s.root", path, WDcfg->UserSetName);          // Added by LJ
+			WDrun->foutROOT = new TFile(fname,"recreate");
+		}
+		if(!WDrun->TTreeROOT){
+			WDrun->TTreeROOT = new TTree("data", "data");
+			WDrun->TTreeROOT->Branch("V1742_Hits", &(WDrun->V1742_Hits),32000,0);
+			WDrun->TTreeROOT->Branch("V1742_FT", &(WDrun->V1742_FT),32000,0);
+		}
+
+		for (gr=0;gr<(WDcfg->Nch/8);gr++) {
+			if (Event->GrPresent[gr]) {
+				for(ch=0; ch<8; ch++) {
+					int Size = Event->DataGroup[gr].ChSize[ch];
+					if (Size <= 0) {
+						continue;
+					}
+					/////////////zerosup
+					datamax=Event->DataGroup[gr].DataChannel[ch][0];
+					datamin=Event->DataGroup[gr].DataChannel[ch][0];
+					for (isample=1; isample<WDcfg->RecordLength-15; isample++){
+						if(Event->DataGroup[gr].DataChannel[ch][isample]>datamax) datamax=Event->DataGroup[gr].DataChannel[ch][isample];
+						if(Event->DataGroup[gr].DataChannel[ch][isample]<datamin) datamin=Event->DataGroup[gr].DataChannel[ch][isample];
+					}
+					if(datamax-datamin<WDcfg->PHthreshold) continue;
+					////////////
+					V1742_Hit Hit;
+					Hit.BoardId = EventInfo->BoardId;
+					Hit.Group = gr;
+					Hit.StartIndexCell = Event->DataGroup[gr].StartIndexCell;
+					Hit.Channel = ch;
+					Hit.EventNumber = EventInfo->EventCounter;
+					Hit.TriggerTimeTag = EventInfo->TriggerTimeTag;
+					Hit.RecordLength = Size;
+					Hit.Waveform = Event->DataGroup[gr].DataChannel[ch];
+
+					V1742_Hit.add_back(Hit);
+				}
+				if(ch==8) {
+					int Size = Event->DataGroup[gr].ChSize[ch];
+					if (Size <= 0) {
+						continue;
+					}
+					V1742_Hit Hit;
+					Hit.BoardId = EventInfo->BoardId;
+					Hit.Group = gr;
+					Hit.StartIndexCell = Event->DataGroup[gr].StartIndexCell;
+					Hit.Channel = ch;
+					Hit.EventNumber = EventInfo->EventCounter;
+					Hit.TriggerTimeTag = EventInfo->TriggerTimeTag;
+					Hit.RecordLength = Size;
+					Hit.Waveform = Event->DataGroup[gr].DataChannel[ch];
+
+					V1742_FT.add_back(Hit);
+				}
+			}
+		}
+		WDrun->TTreeROOT->Fill();
+		WDrun->V1742_Hits.clear();
+		WDrun->V1742_FT.clear();
+	} // closig if( WDcfg->OutFileFlags & OFF_ROOT)
+
+
+else if(WDcfg->AllInOneFlag){
     for (gr=0;gr<(WDcfg->Nch/8);gr++) {
         if (Event->GrPresent[gr]) {
             for(ch=0; ch<9; ch++) {
