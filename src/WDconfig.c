@@ -379,6 +379,13 @@ int ParseConfigFile(FILE *f_ini, WaveDumpConfig_t *WDcfg)
 			continue;
 		}
 
+	// ACQUISITION_TIME_DURATION
+		if (strstr(str,"ACQUISITION_TIME_DURATION")!=NULL){
+			read = fscanf(f_ini, "%ld", &WDcfg->acq_t_dur);
+			continue;
+		}
+
+
         // Interrupt settings (request interrupt when there are at least N events to read; 0=disable interrupts (polling mode))
 		if (strstr(str, "USE_INTERRUPT")!=NULL) {
 			read = fscanf(f_ini, "%d", &WDcfg->InterruptNumEvents);

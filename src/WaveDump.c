@@ -1367,27 +1367,27 @@ void CheckKeyboardCommands(int handle, WaveDumpRun_t *WDrun, WaveDumpConfig_t *W
             else
                 printf("Continuous writing is disabled\n");
             break;
-        case 's' :
-            if (WDrun->AcqRun == 0) {
+	case 's' :
+	    if (WDrun->AcqRun == 0) {
+		    if (BoardInfo.FamilyCode != CAEN_DGTZ_XX742_FAMILY_CODE)//XX742 not considered
+			    Set_relative_Threshold(handle, WDcfg, BoardInfo);
 
-				if (BoardInfo.FamilyCode != CAEN_DGTZ_XX742_FAMILY_CODE)//XX742 not considered
-					Set_relative_Threshold(handle, WDcfg, BoardInfo);
+		    if (BoardInfo.FamilyCode == CAEN_DGTZ_XX730_FAMILY_CODE || BoardInfo.FamilyCode == CAEN_DGTZ_XX725_FAMILY_CODE)
+			    WDrun->GroupPlotSwitch = 0;
 
-				if (BoardInfo.FamilyCode == CAEN_DGTZ_XX730_FAMILY_CODE || BoardInfo.FamilyCode == CAEN_DGTZ_XX725_FAMILY_CODE)
-					WDrun->GroupPlotSwitch = 0;
-				
-                printf("Acquisition started\n");
+		    printf("Acquisition started\n");
 
-                CAEN_DGTZ_SWStartAcquisition(handle);
-                WDrun->AcqRun = 1;
+		    CAEN_DGTZ_SWStartAcquisition(handle);
+		    WDrun->AcqRun = 1;
+		    WDrun->acq_start_time = get_time();
 
-            } else {
-                printf("Acquisition stopped\n");
-                CAEN_DGTZ_SWStopAcquisition(handle);
-                WDrun->AcqRun = 0;
-				//WDrun->Restart = 1;
-            }
-            break;
+	    } else {
+		    printf("Acquisition stopped\n");
+		    CAEN_DGTZ_SWStopAcquisition(handle);
+		    WDrun->AcqRun = 0;
+		    //WDrun->Restart = 1;
+	    }
+	    break;
         case 'm' :
             if (BoardSupportsTemperatureRead(BoardInfo)) {
                 if (WDrun->AcqRun == 0) {
@@ -1589,6 +1589,7 @@ int WriteOutputFilesx742(WaveDumpConfig_t *WDcfg, WaveDumpRun_t *WDrun, CAEN_DGT
     int gr,ch, j, ns;
     char trname[10], flag = 0; 
 	int datamax, datamin, isample;
+//printf("TriggerTimeTag %d  get_time() %ld\n", EventInfo->TriggerTimeTag,  get_time());
 
 if(WDcfg->AllInOneFlag){
     for (gr=0;gr<(WDcfg->Nch/8);gr++) {
@@ -2196,6 +2197,8 @@ InterruptTimeout:
             Ne = 0;
             PrevRateTime = CurrentTime;
         }
+	if(CurrentTime - WDrun.acq_start_time > WDcfg.acq_t_dur) goto QuitProgram;
+
 
         /* Analyze data */
         for(i = 0; i < (int)NumEvents; i++) {

@@ -144,6 +144,7 @@ typedef struct {
 		char UserSetName[86];		// Added by LJ
 		int AllInOneFlag;		// Added by LJ
 		float PHthreshold;		// Added by LJ
+		long acq_t_dur;
 } WaveDumpConfig_t;
 
 
@@ -165,6 +166,7 @@ typedef struct WaveDumpRun_t {
     uint32_t *Histogram[MAX_CH];
     FILE *fout[MAX_CH];
 	FILE *foutaio;
+	long acq_start_time
 } WaveDumpRun_t;
 
 /* Function prototypes */
